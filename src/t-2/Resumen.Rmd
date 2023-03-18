@@ -1,0 +1,102 @@
+```{r echo=FALSE,message=FALSE,results='hide'}
+
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+# lee el csv 
+
+# seteo mi ruta de trabajo donde esta el csv
+setwd("D:/tareas")
+
+df <- read.csv("./House_prices.csv", header = TRUE, dec = ".", sep = ",")
+
+# convierto decimales a enteros
+df$bathrooms <- df$bathrooms %>% as.integer
+df$floors    <- df$floors    %>% as.integer
+
+```
+
+# ¿Cúal es el precio de las casas respecto a la puntuación recibida ?
+
+> Obtener muestra de 50 registros.
+
+```{r echo=FALSE}
+
+subdf <- df[1:50,]
+
+summary(subdf$price)
+summary(subdf$grade)
+
+```
+
+> Filtrado :  df <- df %>% filter(price < 2000000)
+
+```{r echo=FALSE}
+subdf <- subdf %>% filter(price < 2000000)
+
+#View(df)
+#summary(df)
+# pruebas de normalidad de shapiro-wilk, por cada variable
+# esta prueba se utiliza para una muestra de menos de 50
+
+summary(subdf$price)
+summary(subdf$grade)
+
+```
+
+# Pruebas de normalidad de shapiro-wilk y comprobación visual
+> Usando hist() y shapiro.test()
+
+```{r echo=FALSE,message=FALSE, results='hide'}
+hist(subdf$price)
+hist(subdf$grade)
+
+```
+
+> Shapiro.test prueba que la distribución de una variable es normal estadisticamente, si p-value es mayor a 0.05%.
+> Esta prueba se utiliza para una muestra de menos de 50
+
+```{r echo=T}
+
+shapiro.test(subdf$price)
+shapiro.test(subdf$grade)
+
+```
+
+
+# Pruebas de correlación (estadistica)
+
+```{r echo=T}
+# prueba de correlación de variables, su valor deberia ser cercano a 1
+cor.test(subdf$grade,subdf$price, method= "pearson")$estimate
+
+```
+
+
+# Correlación positiva entre la puntuación y el precio de una casa
+
+```{r echo=FALSE,message=FALSE,results='hide'}
+# grafico de correlación, se agrega una linea de regresión
+plot(price~grade, 
+     data = subdf, 
+     main="Diagrama de dispersión precio en relación a la puntuación", 
+     xlab="Puntuación", 
+     ylab="Precio")
+abline(lm(price~grade, data = subdf), col= "red")
+
+
+```
+
+> En medida de que la puntuación es mas alta, los precios de las casas aumentan, se considera que la correlación es tipo positiva y debil.
+
+# Distribución en $
+
+```{r echo=FALSE}
+
+distrib <- plot_ly(subdf, type = "box") %>% add_boxplot(y = subdf$price) %>% layout(title = "Distribución precios de las casas",
+                                                                                      xaxis = list(title = ""),
+                                                                                      yaxis = list(title = "Precio"))
+distrib
+
+```
